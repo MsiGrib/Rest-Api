@@ -1,9 +1,6 @@
 ﻿namespace DataModel.Models.DataBase
 {
-    /// <summary>
-    /// Сессия тренеровки пользователя
-    /// </summary>
-    public class Workout : IEntity<Guid>
+    public record class Workout : IEntity<Guid>
     {
         public Guid Id { get; init; }
         public DateTime StartDate { get; init; }

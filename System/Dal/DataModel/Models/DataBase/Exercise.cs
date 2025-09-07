@@ -1,9 +1,6 @@
 ﻿namespace DataModel.Models.DataBase
 {
-    /// <summary>
-    /// Упражнения
-    /// </summary>
-    public class Exercise : IEntity<Guid>
+    public record class Exercise : IEntity<Guid>
     {
         public Guid Id { get; init; }
         public required string Name { get; init; }

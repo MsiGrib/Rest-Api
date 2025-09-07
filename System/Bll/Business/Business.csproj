@@ -10,10 +10,10 @@
     <ProjectReference Include="..\..\Dal\DataModel\DataModel.csproj" />
     <ProjectReference Include="..\..\Dal\EntityGateWay\EntityGateWay.csproj" />
     <ProjectReference Include="..\..\Dal\Utility\Utility.csproj" />
+    <ProjectReference Include="..\Integrations\SMTP\SMTP.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\User\Dto\" />
     <Folder Include="Models\User\Input\" />
   </ItemGroup>
 

@@ -1,9 +1,11 @@
-﻿using Business.Models.Authentication.Dto;
+﻿using Business.Mappers;
+using Business.Models.Authentication.Dto;
 using Business.Models.Authentication.Input;
+using Business.Models.User.Dto;
 using Business.Services.Interfaces;
-using DataModel.Enums;
-using DataModel.Models.DataBase;
 using EntityGateWay.Repository.Interfaces;
+using SMTP.Models;
+using SMTP.Services.Interfaces;
 using Utility.Security;
 
 namespace Business.Services.Implementations
@@ -11,10 +13,26 @@ namespace Business.Services.Implementations
     internal class UserService : IUserService
     {
         private readonly IUserRepository _repository;
+        private readonly ISMTPService _sMTPService;
 
-        public UserService(IUserRepository repository)
+        public UserService(IUserRepository repository, ISMTPService sMTPService)
         {
             _repository = repository;
+            _sMTPService = sMTPService;
+        }
+
+        public async Task<List<UserDto>?> GetAllAsync()
+        {
+            var users = await _repository.GetAllAsync();
+
+            return UserMapper.ToDtoList(users);
+        }
+
+        public async Task<UserDto?> GetByIdAsync(Guid id)
+        {
+            var user = await _repository.GetByIdAsync(id);
+
+            return UserMapper.ToDto(user);
         }
 
         public async Task<RegistrationDto?> RegistrationUserAsync(UserInput input)
@@ -27,15 +45,9 @@ namespace Business.Services.Implementations
 
             var hash = HashUtility.HashPassword(input.Password);
 
-            var newUser = new User
-            {
-                Name = input.Name,
-                Email = input.Email,
-                PasswordHash = hash.Hash,
-                Salt = hash.Salt,
-                NumberPhone = input.NumberPhone,
-                Type = UserType.Active,
-            };
+            var newUser = UserMapper.ToDBEntity(input, hash.Hash, hash.Salt);
+            if (newUser is null)
+                throw new Exception("Internal error!");
 
             var userId = await _repository.RegistrationAsync(newUser);
 
@@ -65,6 +77,88 @@ namespace Business.Services.Implementations
                 Token = token,
                 UserId = user.Id
             };
+        }
+
+        public async Task<bool> UpdateUserAsync(UpdateUserInput input, Guid id)
+        {
+            var user = await _repository.GetByIdAsync(id);
+            if (user is null)
+                throw new Exception("No user entity.");
+            if (user.Email != input.Email && await _repository.IsExistsUserAsync(input.Email))
+                return false;
+
+            var newUser = user! with
+            {
+                Name = input.Name,
+                Email = input.Email,
+                NumberPhone = input.NumberPhone,
+                Type = input.Type,
+            };
+
+            await _repository.UpdateAsync(newUser);
+
+            return true;
+        }
+
+        public async Task<bool> IsExistsUserAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                throw new Exception("Empty data!");
+
+            return await _repository.IsExistsUserAsync(email);
+        }
+
+        public async Task<bool> IsExistsUserAsync(Guid id)
+        {
+            return await _repository.IsExistsUserAsync(id);
+        }
+
+        public async Task<bool> SendPasswordResetTokenAsync(HostModel host, string email, string jwtKey, string issuer)
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(host.Host)
+                    || string.IsNullOrWhiteSpace(host.Username) || string.IsNullOrWhiteSpace(host.Password))
+                throw new Exception("Empty data!");
+
+            var user = await _repository.GetByEmailAsync(email);
+            if (user is null)
+                return false;
+
+            var token = JwtUtility.GenerateToken(user.Id.ToString(), email, jwtKey, issuer);
+            _sMTPService.SendPasswordReset(host, email, "https://bonchi", token);
+
+            return true;
+        }
+
+        public async Task ResetPasswordAsync(Guid id, string newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(newPassword))
+                throw new Exception("Empty data!");
+            var user = await _repository.GetByIdAsync(id);
+            if (user is null)
+                throw new Exception("No user entity!");
+
+            var hash = HashUtility.HashPassword(newPassword);
+            var newUser = user! with
+            {
+                PasswordHash = hash.Hash,
+                Salt = hash.Salt,
+            };
+
+            await _repository.UpdateAsync(newUser);
+        }
+
+        public async Task DeleteUser(Guid id)
+        {
+            var user = await _repository.GetByIdAsync(id);
+            if (user is null)
+                throw new Exception("No user entity!");
+
+            var newUser = user! with
+            {
+                DeleteTime = DateTime.UtcNow,
+            };
+
+            await _repository.UpdateAsync(newUser);
         }
     }
 }

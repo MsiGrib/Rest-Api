@@ -1,6 +1,6 @@
 ﻿namespace DataModel.Models.DataBase
 {
-    public class WorkoutExercise : IEntity<long>
+    public record class WorkoutExercise : IEntity<long>
     {
         public long Id { get; init; }
 

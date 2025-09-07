@@ -1,6 +1,6 @@
 ﻿namespace Business.Models.Authentication.Dto
 {
-    public class RegistrationDto
+    public record class RegistrationDto
     {
         public Guid UserId { get; set; }
     }

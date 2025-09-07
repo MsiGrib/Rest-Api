@@ -91,6 +91,12 @@ namespace EntityGateWay.Repository.Implementations
                 .AnyAsync(x => x.Email == email);
         }
 
+        public async Task<bool> IsExistsUserAsync(Guid id)
+        {
+            return await _context.Users
+                .AnyAsync(x => x.Id == id);
+        }
+
         #endregion
     }
 }

@@ -19,9 +19,14 @@ namespace Business
             EntityGateWay.Configuration.ConfigurationRepository(collection);
         }
 
+        public static void ConfigurationIntegrations(IServiceCollection collection)
+        {
+            SMTP.Configuration.ConfigurationSMTP(collection);
+        }
+
         public static void ConfigurationService(IServiceCollection collection)
         {
-            collection.AddSingleton<IUserService, UserService>();
+            collection.AddScoped<IUserService, UserService>();
         }
 
         public static void ConfigurationAuthentication(IServiceCollection collection, string jwtIssuer, string jwtKey)

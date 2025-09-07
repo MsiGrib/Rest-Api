@@ -2,7 +2,7 @@
 
 namespace DataModel.Models.DataBase
 {
-    public class User : IEntity<Guid>
+    public record class User : IEntity<Guid>
     {
         public Guid Id { get; init; }
         public required string Name { get; init; }
@@ -11,6 +11,7 @@ namespace DataModel.Models.DataBase
         public required string Salt { get; init; }
         public string? NumberPhone { get; init; }
         public required UserType Type { get; init; }
+        public DateTime? DeleteTime { get; init; }
 
         public virtual ICollection<Workout> Workouts { get; init; } = new List<Workout>();
     }
