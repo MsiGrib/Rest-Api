@@ -1,13 +1,14 @@
 ﻿using Business.Models.Authentication.Dto;
 using Business.Models.Authentication.Input;
 using Business.Models.User.Dto;
+using Business.Models.User.Input;
 using SMTP.Models;
 
 namespace Business.Services.Interfaces
 {
     public interface IUserService
     {
-        public Task<List<UserDto>?> GetAllAsync();
+        public Task<List<UserDto>?> GetAllAsync(UserFilterInput? input = null);
         public Task<UserDto?> GetByIdAsync(Guid id);
         public Task<RegistrationDto?> RegistrationUserAsync(UserInput input);
         public Task<TokenDto?> AuthorizationUserAsync(AuthorizationInput input, string jwtKey, string issuer);

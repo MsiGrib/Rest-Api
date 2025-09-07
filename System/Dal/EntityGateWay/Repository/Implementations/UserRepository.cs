@@ -1,4 +1,6 @@
-﻿using DataModel.Models.DataBase;
+﻿using DataModel.Enums;
+using DataModel.Models;
+using DataModel.Models.DataBase;
 using EntityGateWay.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +36,32 @@ namespace EntityGateWay.Repository.Implementations
             return await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Email == email);
+        }
+
+        public async Task<List<User>?> GetAllForPaginationFilterAsync(Pagination pagination,
+                Guid? id = null, string? name = null, string? email = null,
+                string? numberPhone = null, UserType? type = null)
+        {
+            var query = _context.Users
+                .AsNoTracking();
+
+            if (id.HasValue)
+                query.Where(x => x.Id == id.Value);
+            if (!string.IsNullOrWhiteSpace(name))
+                query.Where(x => x.Name == name);
+            if (!string.IsNullOrWhiteSpace(email))
+                query.Where(x => x.Email == email);
+            if (!string.IsNullOrWhiteSpace(numberPhone))
+                query.Where(x => x.NumberPhone == numberPhone);
+            if (type.HasValue)
+                query.Where(x => x.Type == type.Value);
+
+            var users = await query
+                .Skip(pagination.Skip)
+                .Take(pagination.PageSize)
+                .ToListAsync();
+
+            return users;
         }
 
         #endregion

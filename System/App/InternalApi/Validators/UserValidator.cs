@@ -1,4 +1,4 @@
-﻿using Business.Models.Authentication.Input;
+﻿using Business.Models.User.Input;
 using System.Text.RegularExpressions;
 
 namespace InternalApi.Validators

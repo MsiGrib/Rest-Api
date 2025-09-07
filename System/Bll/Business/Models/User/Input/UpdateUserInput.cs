@@ -1,6 +1,6 @@
 ﻿using DataModel.Enums;
 
-namespace Business.Models.Authentication.Input
+namespace Business.Models.User.Input
 {
     public class UpdateUserInput
     {

@@ -2,7 +2,10 @@
 using Business.Models.Authentication.Dto;
 using Business.Models.Authentication.Input;
 using Business.Models.User.Dto;
+using Business.Models.User.Input;
 using Business.Services.Interfaces;
+using DataModel.Models;
+using DataModel.Models.DataBase;
 using EntityGateWay.Repository.Interfaces;
 using SMTP.Models;
 using SMTP.Services.Interfaces;
@@ -21,9 +24,19 @@ namespace Business.Services.Implementations
             _sMTPService = sMTPService;
         }
 
-        public async Task<List<UserDto>?> GetAllAsync()
+        public async Task<List<UserDto>?> GetAllAsync(UserFilterInput? input = null)
         {
-            var users = await _repository.GetAllAsync();
+            List<User>? users = null;
+
+            if (input is null)
+                users = await _repository.GetAllAsync();
+            else
+                users = await _repository.GetAllForPaginationFilterAsync(new Pagination
+                {
+                    UsePagination = input.UsePagination,
+                    PageNumber = input.PageNumber,
+                    PageSize = input.PageSize,
+                }, input.UserId, input.Name, input.Email, input.NumberPhone, input.UserType);
 
             return UserMapper.ToDtoList(users);
         }

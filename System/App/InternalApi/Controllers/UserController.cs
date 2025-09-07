@@ -1,5 +1,5 @@
-﻿using Business.Models.Authentication.Input;
-using Business.Models.User.Dto;
+﻿using Business.Models.User.Dto;
+using Business.Models.User.Input;
 using Business.Services.Interfaces;
 using InternalApi.Validators;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +10,6 @@ using System.Security.Claims;
 namespace InternalApi.Controllers
 {
     [ApiController]
-    [Authorize]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
@@ -22,27 +21,27 @@ namespace InternalApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<UserDto>?>> GetAllUsers()
+        public async Task<ActionResult<List<UserDto>?>> GetAllUsers([FromQuery] UserFilterInput? input = null)
         {
-            var users = await _userService.GetAllAsync();
+            var users = await _userService.GetAllAsync(input);
 
             return Ok(users);
         }
 
-        [HttpGet("current")]
-        public async Task<ActionResult<UserDto?>> GetUser()
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDto?>> GetUser([FromRoute] Guid id)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
-            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
-                return Unauthorized(new { Errors = "Invalid token." });
+            if (!await _userService.IsExistsUserAsync(id))
+                return NotFound(new { Errors = "This user is not fount." });
 
-            var user = await _userService.GetByIdAsync(userId);
+            var user = await _userService.GetByIdAsync(id);
 
             return Ok(user);
         }
 
         [HttpPut]
-        public async Task<ActionResult> FullUpdateUser([FromBody] UpdateUserInput input)
+        [Authorize]
+        public async Task<ActionResult> UpdateUser([FromBody] UpdateUserInput input)
         {
             var validResult = UserValidator.UpdateUser(input);
             if (!validResult.IsValid)
@@ -60,13 +59,17 @@ namespace InternalApi.Controllers
             return Ok(new { Info = "User is updeting." });
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteUser([FromRoute] Guid id)
+        [HttpDelete]
+        [Authorize]
+        public async Task<ActionResult> DeleteUser()
         {
-            if (!await _userService.IsExistsUserAsync(id))
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized(new { Errors = "Invalid token." });
+            if (!await _userService.IsExistsUserAsync(userId))
                 return NotFound(new { Errors = "User not found." });
 
-            await _userService.DeleteUser(id);
+            await _userService.DeleteUser(userId);
 
             return Ok(new { Info = "User is soft deleted." });
         }
