@@ -1,0 +1,6 @@
+@InternalApi_HostAddress = http://localhost:5267
+
+GET {{InternalApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
