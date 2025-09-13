@@ -16,7 +16,7 @@ namespace Business.Services.Interfaces
         public Task<bool> IsExistsUserAsync(string email);
         public Task<bool> IsExistsUserAsync(Guid id);
         public Task<bool> SendPasswordResetTokenAsync(HostModel host, string email, string jwtKey, string issuer);
-        public Task ResetPasswordAsync(Guid id, string newPassword);
-        public Task DeleteUser(Guid id);
+        public Task<bool> ResetPasswordAsync(Guid id, string newPassword);
+        public Task DeleteUserAsync(Guid id);
     }
 }

@@ -1,4 +1,5 @@
-﻿using DataModel.Models.DataBase;
+﻿using DataModel.Models;
+using DataModel.Models.DataBase;
 using EntityGateWay.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,44 @@ namespace EntityGateWay.Repository.Implementations
             return await _context.Exercises
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<Exercise>?> GetAllForPaginationFilterAsync(Pagination pagination,
+            Guid? id = null, string? name = null, int? setsFrom = null, int? setsTo = null,
+            int? repsFrom = null, int? repsTo = null, double? weightFrom = null,
+            double? weightTo = null)
+        { 
+            var query = _context.Exercises
+                    .AsNoTracking();
+
+            if (id.HasValue)
+                query = query.Where(x => x.Id == id.Value);
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(x => x.Name == name);
+            if (setsFrom.HasValue)
+                query = query.Where(x => x.Sets >= setsFrom.Value);
+            if (setsTo.HasValue)
+                query = query.Where(x => x.Sets <= setsTo.Value);
+            if (repsFrom.HasValue)
+                query = query.Where(x => x.Reps >= repsFrom.Value);
+            if (repsTo.HasValue)
+                query = query.Where(x => x.Reps <= repsTo.Value);
+            if (weightFrom.HasValue)
+                query = query.Where(x => x.Weight >= weightFrom.Value);
+            if (weightTo.HasValue)
+                query = query.Where(x => x.Weight <= weightTo.Value);
+
+            List<Exercise>? exercises = null;
+
+            if (pagination.UsePagination)
+                exercises = await query
+                    .Skip(pagination.Skip)
+                    .Take(pagination.PageSize)
+                    .ToListAsync();
+            else
+                exercises = await query.ToListAsync();
+
+            return exercises;
         }
 
         #endregion

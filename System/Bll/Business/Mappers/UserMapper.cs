@@ -19,7 +19,6 @@ namespace Business.Mappers
                 Email = user.Email ?? string.Empty,
                 NumberPhone = user.NumberPhone,
                 Type = user.Type,
-                Workouts = user.Workouts != null ? new List<Workout>(user.Workouts) : new List<Workout>()
             };
         }
 

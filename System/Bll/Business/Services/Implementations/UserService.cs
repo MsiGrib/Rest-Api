@@ -52,7 +52,7 @@ namespace Business.Services.Implementations
         {
             if (string.IsNullOrWhiteSpace(input.Email) || string.IsNullOrWhiteSpace(input.Name)
                     || string.IsNullOrWhiteSpace(input.Password))
-                throw new Exception("Empty data!");
+                return null;
             if (await _repository.IsExistsUserAsync(input.Email))
                 return null;
 
@@ -60,7 +60,7 @@ namespace Business.Services.Implementations
 
             var newUser = UserMapper.ToDBEntity(input, hash.Hash, hash.Salt);
             if (newUser is null)
-                throw new Exception("Internal error!");
+                return null;
 
             var userId = await _repository.RegistrationAsync(newUser);
 
@@ -73,7 +73,7 @@ namespace Business.Services.Implementations
         public async Task<TokenDto?> AuthorizationUserAsync(AuthorizationInput input, string jwtKey, string issuer)
         {
             if (string.IsNullOrWhiteSpace(input.Email) || string.IsNullOrWhiteSpace(input.Password))
-                throw new Exception("Empty data!");
+                return null;
 
             var user = await _repository.GetByEmailAsync(input.Email);
             if (user is null)
@@ -96,7 +96,7 @@ namespace Business.Services.Implementations
         {
             var user = await _repository.GetByIdAsync(id);
             if (user is null)
-                throw new Exception("No user entity.");
+                return false;
             if (user.Email != input.Email && await _repository.IsExistsUserAsync(input.Email))
                 return false;
 
@@ -116,7 +116,7 @@ namespace Business.Services.Implementations
         public async Task<bool> IsExistsUserAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
-                throw new Exception("Empty data!");
+                return true;
 
             return await _repository.IsExistsUserAsync(email);
         }
@@ -130,7 +130,7 @@ namespace Business.Services.Implementations
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(host.Host)
                     || string.IsNullOrWhiteSpace(host.Username) || string.IsNullOrWhiteSpace(host.Password))
-                throw new Exception("Empty data!");
+                return false;
 
             var user = await _repository.GetByEmailAsync(email);
             if (user is null)
@@ -142,13 +142,13 @@ namespace Business.Services.Implementations
             return true;
         }
 
-        public async Task ResetPasswordAsync(Guid id, string newPassword)
+        public async Task<bool> ResetPasswordAsync(Guid id, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword))
-                throw new Exception("Empty data!");
+                return false;
             var user = await _repository.GetByIdAsync(id);
             if (user is null)
-                throw new Exception("No user entity!");
+                return false;
 
             var hash = HashUtility.HashPassword(newPassword);
             var newUser = user! with
@@ -158,19 +158,18 @@ namespace Business.Services.Implementations
             };
 
             await _repository.UpdateAsync(newUser);
+
+            return true;
         }
 
-        public async Task DeleteUser(Guid id)
+        public async Task DeleteUserAsync(Guid id)
         {
             var user = await _repository.GetByIdAsync(id);
-            if (user is null)
-                throw new Exception("No user entity!");
 
             var newUser = user! with
             {
                 DeleteTime = DateTime.UtcNow,
             };
-
             await _repository.UpdateAsync(newUser);
         }
     }

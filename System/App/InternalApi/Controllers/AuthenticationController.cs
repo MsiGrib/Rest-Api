@@ -83,7 +83,9 @@ namespace InternalApi.Controllers
             if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
                 return Unauthorized(new { Errors = "Invalid token." });
 
-            await _userService.ResetPasswordAsync(userId, input.NewPassword);
+            bool success = await _userService.ResetPasswordAsync(userId, input.NewPassword);
+            if (!success)
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Errors = "Error reset password!" });
 
             return Ok("Password has been reset successfully");
         }

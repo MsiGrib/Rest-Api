@@ -39,6 +39,22 @@ namespace InternalApi.Controllers
             return Ok(user);
         }
 
+        [HttpGet("current")]
+        [Authorize]
+        public async Task<ActionResult<UserDto?>> GetCurrent()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
+                return Unauthorized(new { Errors = "Invalid token." });
+            if (!await _userService.IsExistsUserAsync(userId))
+                return NotFound(new { Errors = "This user is not fount." });
+
+
+            var user = await _userService.GetByIdAsync(userId);
+
+            return Ok(user);
+        }
+
         [HttpPut]
         [Authorize]
         public async Task<ActionResult> UpdateUser([FromBody] UpdateUserInput input)
@@ -59,9 +75,21 @@ namespace InternalApi.Controllers
             return Ok(new { Info = "User is updeting." });
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         [Authorize]
-        public async Task<ActionResult> DeleteUser()
+        public async Task<ActionResult> DeleteUser([FromRoute] Guid id)
+        {
+            if (!await _userService.IsExistsUserAsync(id))
+                return NotFound(new { Errors = "This user is not fount." });
+
+            await _userService.DeleteUserAsync(id);
+
+            return Ok(new { Info = "User is soft deleted." });
+        }
+
+        [HttpDelete("current")]
+        [Authorize]
+        public async Task<ActionResult> DeleteCurrent()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst(JwtRegisteredClaimNames.Sub);
             if (userIdClaim is null || !Guid.TryParse(userIdClaim.Value, out Guid userId))
@@ -69,7 +97,7 @@ namespace InternalApi.Controllers
             if (!await _userService.IsExistsUserAsync(userId))
                 return NotFound(new { Errors = "User not found." });
 
-            await _userService.DeleteUser(userId);
+            await _userService.DeleteUserAsync(userId);
 
             return Ok(new { Info = "User is soft deleted." });
         }

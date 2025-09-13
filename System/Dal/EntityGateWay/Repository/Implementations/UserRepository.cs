@@ -46,20 +46,25 @@ namespace EntityGateWay.Repository.Implementations
                 .AsNoTracking();
 
             if (id.HasValue)
-                query.Where(x => x.Id == id.Value);
+                query = query.Where(x => x.Id == id.Value);
             if (!string.IsNullOrWhiteSpace(name))
-                query.Where(x => x.Name == name);
+                query = query.Where(x => x.Name == name);
             if (!string.IsNullOrWhiteSpace(email))
-                query.Where(x => x.Email == email);
+                query = query.Where(x => x.Email == email);
             if (!string.IsNullOrWhiteSpace(numberPhone))
-                query.Where(x => x.NumberPhone == numberPhone);
+                query = query.Where(x => x.NumberPhone == numberPhone);
             if (type.HasValue)
-                query.Where(x => x.Type == type.Value);
+                query = query.Where(x => x.Type == type.Value);
 
-            var users = await query
-                .Skip(pagination.Skip)
-                .Take(pagination.PageSize)
-                .ToListAsync();
+            List<User>? users = null;
+
+            if (pagination.UsePagination)
+                users = await query
+                    .Skip(pagination.Skip)
+                    .Take(pagination.PageSize)
+                    .ToListAsync();
+            else
+                users = await query.ToListAsync();
 
             return users;
         }
