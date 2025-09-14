@@ -20,6 +20,7 @@ namespace EntityGateWay.Repository.Implementations
         {
             return await _context.Exercises
                 .AsNoTracking()
+                .Where(x => x.DeleteTime != null)
                 .ToListAsync();
         }
 
@@ -36,7 +37,8 @@ namespace EntityGateWay.Repository.Implementations
             double? weightTo = null)
         { 
             var query = _context.Exercises
-                    .AsNoTracking();
+                .Where(x => x.DeleteTime != null)
+                .AsNoTracking();
 
             if (id.HasValue)
                 query = query.Where(x => x.Id == id.Value);

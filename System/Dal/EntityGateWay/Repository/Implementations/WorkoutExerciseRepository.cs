@@ -66,5 +66,16 @@ namespace EntityGateWay.Repository.Implementations
         }
 
         #endregion
+
+        #region Other
+
+        public async Task<bool> IsExistWorkoutExerciseByWorkoutExerciseId(Guid workoutId, Guid exerciseId)
+        {
+            return await _context.WorkoutsExercises
+                .AsNoTracking()
+                .AnyAsync(x => x.WorkoutId == workoutId && x.ExerciseId == exerciseId);
+        }
+
+        #endregion
     }
 }

@@ -21,6 +21,7 @@ namespace EntityGateWay.Repository.Implementations
         {
             return await _context.Users
                 .AsNoTracking()
+                .Where(x => x.DeleteTime != null)
                 .ToListAsync();
         }
 
@@ -43,6 +44,7 @@ namespace EntityGateWay.Repository.Implementations
                 string? numberPhone = null, UserType? type = null)
         {
             var query = _context.Users
+                .Where(x => x.DeleteTime != null)
                 .AsNoTracking();
 
             if (id.HasValue)

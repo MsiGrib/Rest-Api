@@ -32,6 +32,7 @@ namespace Business.Mappers
                 Sets = input.Sets,
                 Reps = input.Reps,
                 Weight = input.Weight,
+                DeleteTime = null,
             };
         }
 

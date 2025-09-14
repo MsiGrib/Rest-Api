@@ -72,12 +72,20 @@ namespace Business.Services.Implementations
 
         public async Task<bool> DeleteExerciseAsync(Guid id)
         {
-            var exercise = await GetByIdAsync(id);
-            if (exercise is null)
-                return false;
+            var exercise = await _repository.GetByIdAsync(id);
 
-            await _repository.DeleteByIdAsync(id);
-            return true;
+            if (exercise is not null)
+            {
+                var newExercise = exercise! with
+                {
+                    DeleteTime = DateTime.UtcNow,
+                };
+                await _repository.UpdateAsync(newExercise);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

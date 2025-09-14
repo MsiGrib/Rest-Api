@@ -7,5 +7,6 @@
         public required int Sets { get; init; }
         public required int Reps { get; init; }
         public required double Weight { get; init; }
+        public DateTime? DeleteTime { get; init; }
     }
 }

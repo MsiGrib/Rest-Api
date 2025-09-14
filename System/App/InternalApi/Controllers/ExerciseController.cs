@@ -80,7 +80,7 @@ namespace InternalApi.Controllers
             if (!success)
                 return NotFound(new { Errors = "Exercise not found." });
 
-            return Ok(new { Info = "Exercise is deleted." });
+            return Ok(new { Info = "Exercise is soft deleted." });
         }
     }
 }

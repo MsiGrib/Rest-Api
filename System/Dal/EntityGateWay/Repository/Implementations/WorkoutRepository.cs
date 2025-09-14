@@ -29,6 +29,14 @@ namespace EntityGateWay.Repository.Implementations
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
+        public async Task<List<Workout>?> GetAllByUserIdAsync(Guid userId)
+        {
+            return await _context.Workouts
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .ToListAsync();
+        }
+
         #endregion
 
         #region Add
@@ -38,6 +46,15 @@ namespace EntityGateWay.Repository.Implementations
             await _context.Workouts
                 .AddAsync(entity);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<Workout> StartWorkoutAsync(Workout entity)
+        {
+            await _context.Workouts
+                .AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return entity;
         }
 
         #endregion
